@@ -1,6 +1,7 @@
 package eu.easyminer.discretization.algorithm
 
 import eu.easyminer.discretization._
+import eu.easyminer.discretization.interval.{ExclusiveIntervalBound, InclusiveIntervalBound, Interval}
 
 /**
   * Created by propan on 17. 3. 2017.

@@ -1,4 +1,4 @@
-package eu.easyminer.discretization
+package eu.easyminer.discretization.util
 
 import java.io._
 
@@ -18,6 +18,13 @@ class PersistentNumericIterable[T] private(it: Iterator[T], file: File)(implicit
 
 object PersistentNumericIterable {
 
-  def apply[T](it: Iterator[T], file: File)(implicit n: Numeric[T]): Iterable[T] = new PersistentNumericIterable(it, file)
+  def apply[A, B](it: Iterable[A], file: File)(f: Iterable[A] => B)(implicit n: Numeric[A]): B = {
+    val pni = new PersistentNumericIterable(it.iterator, file)
+    try {
+      f(pni)
+    } finally {
+      file.delete()
+    }
+  }
 
 }
