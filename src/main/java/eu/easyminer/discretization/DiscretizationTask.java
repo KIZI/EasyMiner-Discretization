@@ -5,5 +5,11 @@ package eu.easyminer.discretization;
  */
 public interface DiscretizationTask {
 
+    /**
+     * This property determines how much memory discretization algorithms can consume.
+     *
+     * @return buffer size in bytes
+     */
+    int getBufferSize();
 
 }

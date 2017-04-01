@@ -1,7 +1,7 @@
 package eu.easyminer.discretization.algorithm
 
-import eu.easyminer.discretization.interval.{InclusiveIntervalBound, IntervalFrequency, ValueFrequency}
-import eu.easyminer.discretization.sorting.ReversableSortedIterable
+import eu.easyminer.discretization.impl.{InclusiveIntervalBound, IntervalFrequency, ValueFrequency}
+import eu.easyminer.discretization.impl.sorting.ReversableSortedIterable
 
 /**
   * Created by propan on 31. 3. 2017.

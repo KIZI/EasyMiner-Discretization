@@ -7,7 +7,7 @@ trait Discretization[T] {
 
   implicit val n: Numeric[T]
 
-  def discretize(data: Iterable[T]): Seq[interval.Interval]
+  def discretize(data: Iterable[T]): Seq[impl.Interval]
 
 }
 

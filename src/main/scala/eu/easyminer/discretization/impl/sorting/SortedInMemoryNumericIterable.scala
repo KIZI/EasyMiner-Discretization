@@ -1,6 +1,6 @@
-package eu.easyminer.discretization.sorting
+package eu.easyminer.discretization.impl.sorting
 
-import eu.easyminer.discretization.sorting.SortedInMemoryNumericIterable.Exceptions.BufferOverflowException
+import eu.easyminer.discretization.impl.sorting.SortedInMemoryNumericIterable.Exceptions.BufferOverflowException
 
 import scala.collection.mutable
 import eu.easyminer.discretization.util.NumericByteArray._
@@ -12,13 +12,13 @@ class SortedInMemoryNumericIterable[T] private(it: Iterator[T], bufferSize: Int)
 
   private lazy val sortedCollection = {
     val numberOfValues = math.floor(bufferSize.toDouble / n.zero.length)
-    val sortedCollection = mutable.PriorityQueue.empty[T]
-    val (it1, it2) = it.zipWithIndex.span(_._2 >= numberOfValues)
+    val sortedCollection = mutable.PriorityQueue.empty[T](n.reverse)
+    val (it1, it2) = it.zipWithIndex.span(_._2 < numberOfValues)
     sortedCollection ++= it1.map(_._1)
     if (it2.hasNext) {
       throw new BufferOverflowException(bufferSize)
     }
-    sortedCollection
+    sortedCollection.dequeueAll
   }
 
   def iterator: Iterator[T] = sortedCollection.iterator
@@ -31,10 +31,7 @@ class SortedInMemoryNumericIterable[T] private(it: Iterator[T], bufferSize: Int)
 
 object SortedInMemoryNumericIterable {
 
-  def apply[T](it: Iterator[T], bufferSize: Int)(implicit n: Numeric[T]): (Iterable[T], Iterable[T]) = {
-    val smni = new SortedInMemoryNumericIterable(it, bufferSize)
-    (smni, smni.reverse)
-  }
+  def apply[T](it: Iterator[T], bufferSize: Int)(implicit n: Numeric[T]): ReversableSortedIterable[T] = new SortedInMemoryNumericIterable(it, bufferSize)
 
   object Exceptions {
 

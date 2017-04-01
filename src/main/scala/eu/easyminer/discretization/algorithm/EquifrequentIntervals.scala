@@ -2,10 +2,10 @@ package eu.easyminer.discretization.algorithm
 
 import eu.easyminer.discretization.Discretization
 import eu.easyminer.discretization.Discretization.Exceptions.IllegalTypeOfIterable
-import eu.easyminer.discretization.interval.{InclusiveIntervalBound, Interval, IntervalFrequency, ValueFrequency}
-import eu.easyminer.discretization.sorting.ReversableSortedIterable
+import eu.easyminer.discretization.impl.sorting.ReversableSortedIterable
 import IntervalSmoothing._
 import CutpointsResolver._
+import eu.easyminer.discretization.impl.{InclusiveIntervalBound, Interval, IntervalFrequency, ValueFrequency}
 
 /**
   * Created by propan on 18. 3. 2017.

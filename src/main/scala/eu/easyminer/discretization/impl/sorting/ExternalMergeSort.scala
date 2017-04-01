@@ -1,4 +1,4 @@
-package eu.easyminer.discretization.sorting
+package eu.easyminer.discretization.impl.sorting
 
 import java.io._
 
@@ -171,8 +171,14 @@ trait ExternalMergeSort {
       new ChunkInfo(n.zero, chunkSize)
     }
     val sortedChunksFile = directory.newChildFile
-    val numberOfSavedChunks = new ChunkSorting[T](chunkInfo).sortChunks(it, sortedChunksFile)
-    new ChunkMerging[T](chunkInfo, numberOfSavedChunks).mergeSortedChunks(sortedChunksFile)
+    try {
+      val numberOfSavedChunks = new ChunkSorting[T](chunkInfo).sortChunks(it, sortedChunksFile)
+      new ChunkMerging[T](chunkInfo, numberOfSavedChunks).mergeSortedChunks(sortedChunksFile)
+    } catch {
+      case th: Throwable =>
+        if (sortedChunksFile.exists()) sortedChunksFile.delete()
+        throw th
+    }
   }
 
 }

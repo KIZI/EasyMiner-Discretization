@@ -1,4 +1,4 @@
-package eu.easyminer.discretization.interval
+package eu.easyminer.discretization.impl
 
 /**
   * Created by propan on 31. 3. 2017.

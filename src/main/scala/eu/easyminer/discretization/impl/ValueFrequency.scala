@@ -1,6 +1,8 @@
-package eu.easyminer.discretization.interval
+package eu.easyminer.discretization.impl
 
-import eu.easyminer.discretization.sorting.SortedIterable
+import eu.easyminer.discretization.impl.sorting.SortedIterable
+
+import scala.language.implicitConversions
 
 /**
   * Created by propan on 31. 3. 2017.

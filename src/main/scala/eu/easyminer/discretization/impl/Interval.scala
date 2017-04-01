@@ -1,4 +1,4 @@
-package eu.easyminer.discretization.interval
+package eu.easyminer.discretization.impl
 
 import eu.easyminer.discretization
 
@@ -24,6 +24,8 @@ object Interval {
 
     def isRightBoundOpened: java.lang.Boolean = !isRightBoundClosed
   }
+
+  implicit def seqIntervalsToArrayJavaIntervals(intervals: Seq[Interval]): Array[discretization.Interval] = intervals.iterator.map(x => x: discretization.Interval).toArray
 
 }
 

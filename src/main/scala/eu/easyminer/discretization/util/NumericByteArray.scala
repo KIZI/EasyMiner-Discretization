@@ -2,6 +2,8 @@ package eu.easyminer.discretization.util
 
 import java.nio.ByteBuffer
 
+import scala.language.implicitConversions
+
 /**
   * Created by propan on 17. 3. 2017.
   */

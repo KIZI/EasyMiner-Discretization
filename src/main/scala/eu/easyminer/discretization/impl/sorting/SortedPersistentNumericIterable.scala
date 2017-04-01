@@ -1,10 +1,11 @@
-package eu.easyminer.discretization.sorting
+package eu.easyminer.discretization.impl.sorting
 
 import java.io.{File, FileInputStream}
 
+import eu.easyminer.discretization.impl.PersistentNumericIterable
 import eu.easyminer.discretization.util.NumericByteArray._
 import eu.easyminer.discretization.util.PersistentIteratorOps._
-import eu.easyminer.discretization.util.{PersistentNumericIterable, ReversedFileInputStream}
+import eu.easyminer.discretization.util.ReversedFileInputStream
 
 /**
   * Created by propan on 19. 3. 2017.

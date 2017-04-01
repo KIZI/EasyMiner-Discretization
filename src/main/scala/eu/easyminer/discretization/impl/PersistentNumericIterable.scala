@@ -1,4 +1,4 @@
-package eu.easyminer.discretization.util
+package eu.easyminer.discretization.impl
 
 import java.io._
 

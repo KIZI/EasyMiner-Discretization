@@ -5,6 +5,6 @@ package eu.easyminer.discretization;
  */
 public interface Discretizable {
 
-    <T extends Number> Interval[] discretize(DiscretizationTask discretizationTask, Iterable<T> data);
+    <T extends Number> Interval[] discretize(DiscretizationTask discretizationTask, Iterable<T> data, Class<T> clazz);
 
 }
