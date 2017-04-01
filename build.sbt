@@ -1,4 +1,6 @@
-name := "EasyMiner-Discretization"
+name := "easyminer-discretization"
+
+organization := "eu.easyminer"
 
 version := "1.0"
 
