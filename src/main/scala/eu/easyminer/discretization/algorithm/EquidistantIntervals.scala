@@ -6,7 +6,7 @@ import eu.easyminer.discretization.{impl, _}
 /**
   * Created by propan on 17. 3. 2017.
   */
-class EquidistantIntervals[T](bins: Int)(implicit val n: Numeric[T]) extends Discretization[T] {
+class EquidistantIntervals[T] private[algorithm](bins: Int)(implicit val n: Numeric[T]) extends Discretization[T] {
 
   def discretize(data: Iterable[T]): Seq[impl.Interval] = data.iterator
     .map(x => (x, x))

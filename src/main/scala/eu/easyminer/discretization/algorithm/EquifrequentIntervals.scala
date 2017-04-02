@@ -1,16 +1,15 @@
 package eu.easyminer.discretization.algorithm
 
-import eu.easyminer.discretization.Discretization
-import eu.easyminer.discretization.Discretization.Exceptions.IllegalTypeOfIterable
+import eu.easyminer.discretization.algorithm.CutpointsResolver._
+import eu.easyminer.discretization.algorithm.Discretization.Exceptions.IllegalTypeOfIterable
+import eu.easyminer.discretization.algorithm.IntervalSmoothing._
 import eu.easyminer.discretization.impl.sorting.ReversableSortedIterable
-import IntervalSmoothing._
-import CutpointsResolver._
 import eu.easyminer.discretization.impl.{InclusiveIntervalBound, Interval, IntervalFrequency, ValueFrequency}
 
 /**
   * Created by propan on 18. 3. 2017.
   */
-class EquifrequentIntervals[T](bins: Int)(implicit val n: Numeric[T]) extends Discretization[T] {
+class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Numeric[T]) extends Discretization[T] {
 
   private def countOptimalFrequency(data: Iterable[T]) = {
     val dataCount = data.iterator.size

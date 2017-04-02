@@ -3,10 +3,9 @@ package eu.easyminer.discretization.impl
 import java.io.File
 
 import eu.easyminer.discretization
-import eu.easyminer.discretization.algorithm.{EquidistantIntervals, EquifrequentIntervals, EquisizedIntervals}
+import eu.easyminer.discretization.algorithm.{Discretization, EquidistantIntervals, EquifrequentIntervals, EquisizedIntervals}
 import eu.easyminer.discretization.impl.IterableConversions._
 import eu.easyminer.discretization.impl.sorting.{ReversableSortedIterable, SortedInMemoryNumericIterable, SortedPersistentNumericIterable}
-import eu.easyminer.discretization.task.{EquidistanceDiscretizationTask, EquifrequencyDiscretizationTask, EquisizeDiscretizationTask}
 import eu.easyminer.discretization.{Discretizable, DiscretizationTask}
 
 import scala.language.implicitConversions
@@ -18,27 +17,14 @@ import scala.util.Random
   */
 object DefaultDiscretization extends Discretizable {
 
-  object Exceptions {
-
-    object UnsupportedDiscretizationTask extends Exception("Unsupported discretization task.")
-
-  }
-
-  private def getDiscretizationAlgorithm[T](discretizationTask: DiscretizationTask)(implicit n: Numeric[T]) = discretizationTask match {
-    case dt: EquidistanceDiscretizationTask => new EquidistantIntervals(dt.getNumberOfBins)
-    case dt: EquifrequencyDiscretizationTask => new EquifrequentIntervals(dt.getNumberOfBins)
-    case dt: EquisizeDiscretizationTask => new EquisizedIntervals(dt.getMinSupport)
-    case _ => throw Exceptions.UnsupportedDiscretizationTask
-  }
-
-  private def javaNumberToScalaNumber[A <: Number, B](number: A)(implicit n: Numeric[B]): B = number.intValue().asInstanceOf[B]
+  private def javaNumberToScalaNumber[A <: Number, B](number: A)(implicit n: Numeric[B]): B = number.asInstanceOf[B]
 
   private def doWithNumeric[A <: Number, B](discretizationTask: DiscretizationTask, data: java.lang.Iterable[A])(implicit n: Numeric[B]): Array[discretization.Interval] = {
     lazy val file = Stream.continually(new File(Random.alphanumeric.take(8).mkString)).find(!_.exists()).get
     lazy val directory = new File("./")
     implicit val sn: A => B = javaNumberToScalaNumber[A, B] _
     implicit val c: java.util.Iterator[A] => Iterator[B] = javaIteratorToIterator[A, B] _
-    val dt = getDiscretizationAlgorithm(discretizationTask)
+    val dt = Discretization(discretizationTask)
     dt match {
       case dt: EquidistantIntervals[B] => dt.discretize(data.asScala)
       case _: EquifrequentIntervals[B] | _: EquisizedIntervals[B] => data match {

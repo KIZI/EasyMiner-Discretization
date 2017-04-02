@@ -1,8 +1,7 @@
 package eu.easyminer.discretization.algorithm
 
-import eu.easyminer.discretization.Discretization.Exceptions.IllegalTypeOfIterable
+import Discretization.Exceptions.IllegalTypeOfIterable
 import eu.easyminer.discretization.impl.sorting.ReversableSortedIterable
-import eu.easyminer.discretization.Discretization
 import IntervalSmoothing._
 import CutpointsResolver._
 import eu.easyminer.discretization.impl._
@@ -10,7 +9,7 @@ import eu.easyminer.discretization.impl._
 /**
   * Created by propan on 31. 3. 2017.
   */
-class EquisizedIntervals[T](minSupport: Support)(implicit val n: Numeric[T]) extends Discretization[T] {
+class EquisizedIntervals[T] private[algorithm](minSupport: Support)(implicit val n: Numeric[T]) extends Discretization[T] {
 
   private def countOptimalFrequency(data: Iterable[T]) = minSupport match {
     case RelativeSupport(minSupport) => math.ceil(data.iterator.size * minSupport).toInt
