@@ -3,7 +3,7 @@ package eu.easyminer.discretization.algorithm
 import eu.easyminer.discretization.algorithm.CutpointsResolver._
 import eu.easyminer.discretization.algorithm.Discretization.Exceptions.IllegalTypeOfIterable
 import eu.easyminer.discretization.algorithm.IntervalSmoothing._
-import eu.easyminer.discretization.impl.sorting.ReversableSortedIterable
+import eu.easyminer.discretization.impl.sorting.SortedIterable
 import eu.easyminer.discretization.impl.{InclusiveIntervalBound, Interval, IntervalFrequency, ValueFrequency}
 
 /**
@@ -61,13 +61,13 @@ class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Num
 
 
   def discretize(data: Iterable[T]): Seq[Interval] = data match {
-    case data: ReversableSortedIterable[T] =>
+    case data: SortedIterable[T] =>
       val optimalFrequency = countOptimalFrequency(data)
       val intervals = searchIntervals(data, optimalFrequency)
-      smoothIntervals(intervals, data)(canItMoveLeft(optimalFrequency))(canItMoveRight(optimalFrequency))
+      smoothIntervals(intervals, data, 1000000)(canItMoveLeft(optimalFrequency))(canItMoveRight(optimalFrequency))
       resolveCutpoints(intervals)
       intervals.iterator.map(_.interval).toList
-    case _ => throw new IllegalTypeOfIterable(classOf[ReversableSortedIterable[T]], data.getClass)
+    case _ => throw new IllegalTypeOfIterable(classOf[SortedIterable[T]], data.getClass)
   }
 
 }
