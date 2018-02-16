@@ -1,6 +1,6 @@
 package eu.easyminer.discretization.impl
 
-import eu.easyminer.discretization.impl.sorting.SortedIterable
+import eu.easyminer.discretization.impl.sorting.SortedTraversable
 
 import scala.language.implicitConversions
 
@@ -11,7 +11,7 @@ case class ValueFrequency[T](value: T, frequency: Int)
 
 object ValueFrequency {
 
-  implicit def sortedIterableToValueFrequencyIterable[T](it: SortedIterable[T])(implicit n: Numeric[T]): Iterable[ValueFrequency[T]] = new Iterable[ValueFrequency[T]] {
+  implicit def sortedIterableToValueFrequencyIterable[T](it: SortedTraversable[T])(implicit n: Numeric[T]): Iterable[ValueFrequency[T]] = new Iterable[ValueFrequency[T]] {
     def iterator: Iterator[ValueFrequency[T]] = new Iterator[ValueFrequency[T]] {
       val _it = it.iterator
       var lastValue = Option.empty[T]

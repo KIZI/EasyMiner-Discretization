@@ -11,7 +11,7 @@ trait Discretization[T] {
 
   implicit val n: Numeric[T]
 
-  def discretize(data: Iterable[T]): Seq[impl.Interval]
+  def discretize(data: Traversable[T]): Traversable[impl.Interval]
 
 }
 
@@ -25,7 +25,7 @@ object Discretization {
 
   }
 
-  def apply[T](dt: DiscretizationTask)(implicit n: Numeric[T]) = {
+  def apply[T](dt: DiscretizationTask)(implicit n: Numeric[T]): Discretization[T] = {
     validate(dt)
     dt match {
       case dt: EquidistanceDiscretizationTask =>

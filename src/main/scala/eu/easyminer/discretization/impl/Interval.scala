@@ -16,9 +16,9 @@ object Interval {
 
     def getRightBoundValue: java.lang.Double = interval.maxValue.value
 
-    def isLeftBoundClosed: java.lang.Boolean = interval.minValue.isInstanceOf[InclusiveIntervalBound]
+    def isLeftBoundClosed: java.lang.Boolean = interval.minValue.isInstanceOf[IntervalBound.Inclusive]
 
-    def isRightBoundClosed: java.lang.Boolean = interval.maxValue.isInstanceOf[InclusiveIntervalBound]
+    def isRightBoundClosed: java.lang.Boolean = interval.maxValue.isInstanceOf[IntervalBound.Inclusive]
 
     def isLeftBoundOpened: java.lang.Boolean = !isLeftBoundClosed
 
@@ -28,5 +28,3 @@ object Interval {
   implicit def seqIntervalsToArrayJavaIntervals(intervals: Seq[Interval]): Array[discretization.Interval] = intervals.iterator.map(x => x: discretization.Interval).toArray
 
 }
-
-case class IntervalFrequency(interval: Interval, frequency: Int)

@@ -7,6 +7,10 @@ sealed trait IntervalBound {
   val value: Double
 }
 
-case class InclusiveIntervalBound(value: Double) extends IntervalBound
+object IntervalBound {
 
-case class ExclusiveIntervalBound(value: Double) extends IntervalBound
+  case class Inclusive(value: Double) extends IntervalBound
+
+  case class Exclusive(value: Double) extends IntervalBound
+
+}

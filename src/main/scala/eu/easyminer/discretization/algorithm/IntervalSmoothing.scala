@@ -2,7 +2,7 @@ package eu.easyminer.discretization.algorithm
 
 import java.util
 
-import eu.easyminer.discretization.impl.sorting.SortedIterable
+import eu.easyminer.discretization.impl.sorting.SortedTraversable
 import eu.easyminer.discretization.impl.{InclusiveIntervalBound, IntervalFrequency, ValueFrequency}
 import eu.easyminer.discretization.util.NumericByteArray._
 
@@ -11,7 +11,7 @@ import eu.easyminer.discretization.util.NumericByteArray._
   */
 trait IntervalSmoothing {
 
-  def smoothIntervals[T](intervals: collection.mutable.ArrayBuffer[IntervalFrequency], records: SortedIterable[T], bufferSize: Int)
+  def smoothIntervals[T](intervals: collection.mutable.ArrayBuffer[IntervalFrequency], records: SortedTraversable[T], bufferSize: Int)
                         (canItMoveLeft: (ValueFrequency[T], IntervalFrequency, IntervalFrequency) => Boolean)
                         (canItMoveRight: (ValueFrequency[T], IntervalFrequency, IntervalFrequency) => Boolean)
                         (implicit n: Numeric[T]): Unit = {

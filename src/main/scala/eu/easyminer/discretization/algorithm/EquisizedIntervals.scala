@@ -4,7 +4,7 @@ import eu.easyminer.discretization.algorithm.CutpointsResolver._
 import eu.easyminer.discretization.algorithm.Discretization.Exceptions.IllegalTypeOfIterable
 import eu.easyminer.discretization.algorithm.IntervalSmoothing._
 import eu.easyminer.discretization.impl._
-import eu.easyminer.discretization.impl.sorting.SortedIterable
+import eu.easyminer.discretization.impl.sorting.SortedTraversable
 
 /**
   * Created by propan on 31. 3. 2017.
@@ -53,13 +53,13 @@ class EquisizedIntervals[T] private[algorithm](minSupport: Support)(implicit val
   }
 
   def discretize(data: Iterable[T]): Seq[Interval] = data match {
-    case data: SortedIterable[T] =>
+    case data: SortedTraversable[T] =>
       val optimalFrequency = countOptimalFrequency(data)
       val intervals = searchIntervals(data, optimalFrequency)
       smoothIntervals(intervals, data, 1000000)(canItMoveLeft(optimalFrequency))(canItMoveRight(optimalFrequency))
       resolveCutpoints(intervals)
       intervals.iterator.map(_.interval).toList
-    case _ => throw new IllegalTypeOfIterable(classOf[SortedIterable[T]], data.getClass)
+    case _ => throw new IllegalTypeOfIterable(classOf[SortedTraversable[T]], data.getClass)
   }
 
 }

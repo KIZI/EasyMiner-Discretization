@@ -7,16 +7,13 @@ import eu.easyminer.discretization.util.NumericByteArray._
 import scala.collection.mutable
 import scala.util.Random
 
-
 /**
   * Created by propan on 19. 3. 2017.
   */
-trait ExternalMergeSort {
-
-  val bufferSize: Int
+class ExternalMergeSort(bufferSize: Int) {
 
   implicit private class PimpedFile(directory: File) {
-    def newChildFile = {
+    def newChildFile: File = {
       val file = Stream.continually(new File(directory, Random.alphanumeric.take(8).mkString)).find(!_.exists()).get
       file.createNewFile()
       file
@@ -24,24 +21,26 @@ trait ExternalMergeSort {
   }
 
   private class ChunkInfo(val numericBytes: Array[Byte], val chunkSize: Int) {
-    val chunkSizeBytes = chunkSize * numericBytes.length
-    val halfChunkSize = chunkSize / 2
-    val halfChunkSizeBytes = halfChunkSize * numericBytes.length
+    val chunkSizeBytes: Int = chunkSize * numericBytes.length
+    val halfChunkSize: Int = chunkSize / 2
+    val halfChunkSizeBytes: Int = halfChunkSize * numericBytes.length
   }
 
   private class ChunkSorting[T](chunkInfo: ChunkInfo)(implicit n: Numeric[T]) {
 
     //it sorts chunks and save them into the file
     //it return total number of saved chunks
-    def sortChunks(it: Iterator[T], file: File): Int = {
+    def sortChunks(it: Traversable[T], file: File): Int = {
       val stream = new BufferedOutputStream(new FileOutputStream(file))
       try {
         val buffer = new mutable.PriorityQueue[T]()(n.reverse)
         var numberOfSavedChunks = 0
-        def saveBuffer() = {
+
+        def saveBuffer(): Unit = {
           if (buffer.nonEmpty) numberOfSavedChunks += 1
           while (buffer.nonEmpty) stream.write(buffer.dequeue())
         }
+
         for (x <- it) {
           buffer.enqueue(x)
           if (buffer.size == chunkInfo.chunkSize) {
@@ -62,8 +61,8 @@ trait ExternalMergeSort {
     //it merges two chunks in memory which has size chunk1.next.size + chunk2.next.size
     //it returns one sorted iterator from two sorted chunks
     def mergeTwoChunks(chunk1: Iterator[Iterator[T]], chunk2: Iterator[Iterator[T]]): Iterator[T] = new Iterator[T] {
-      var chunkList1 = if (chunk1.hasNext) chunk1.next() else Iterator.empty
-      var chunkList2 = if (chunk2.hasNext) chunk2.next() else Iterator.empty
+      var chunkList1: Iterator[T] = if (chunk1.hasNext) chunk1.next() else Iterator.empty
+      var chunkList2: Iterator[T] = if (chunk2.hasNext) chunk2.next() else Iterator.empty
       var head1 = Option.empty[T]
       var head2 = Option.empty[T]
 
@@ -77,7 +76,7 @@ trait ExternalMergeSort {
         Right(x2.get)
       }
 
-      def loadChunk(chunk: Iterator[T], it: Iterator[Iterator[T]]) = if (chunk.isEmpty) {
+      def loadChunk(chunk: Iterator[T], it: Iterator[Iterator[T]]): Iterator[T] = if (chunk.isEmpty) {
         if (it.hasNext) it.next() else Iterator.empty
       } else {
         chunk
@@ -108,8 +107,9 @@ trait ExternalMergeSort {
     def loadTwoChunks(raf: RandomAccessFile)(chunkOffset: Int, adjacentSortedChunks: Int): (Iterator[Iterator[T]], Iterator[Iterator[T]]) = {
       val offset1 = chunkOffset.toLong * chunkInfo.chunkSizeBytes
       val offset2 = offset1 + chunkInfo.chunkSizeBytes * adjacentSortedChunks
+
       def createIterator(offset: Long, endOffset: Long): Iterator[Iterator[T]] = new Iterator[Iterator[T]] {
-        var _offset = offset
+        var _offset: Long = offset
 
         def readIntoBuffer: Iterator[T] = {
           val buffer = new Array[Byte](chunkInfo.halfChunkSizeBytes)
@@ -131,6 +131,7 @@ trait ExternalMergeSort {
           Iterator.empty.next()
         }
       }
+
       createIterator(offset1, offset2 - 1) -> createIterator(offset2, offset2 + chunkInfo.chunkSizeBytes * adjacentSortedChunks - 1)
     }
 
@@ -156,12 +157,13 @@ trait ExternalMergeSort {
         }
         mergeSortedChunksWithLength(newFile, desiredAdjacentSortedChunks)
       }
+
       mergeSortedChunksWithLength(file, 1)
     }
 
   }
 
-  def sort[T](it: Iterator[T], directory: File)(implicit n: Numeric[T]): File = {
+  def sort[T](it: Traversable[T], directory: File)(implicit n: Numeric[T]): File = {
     val chunkInfo = {
       val numericBytes: Array[Byte] = n.zero
       val chunkSize = {
