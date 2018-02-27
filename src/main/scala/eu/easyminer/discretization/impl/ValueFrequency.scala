@@ -11,28 +11,18 @@ case class ValueFrequency[T](value: T, frequency: Int)
 
 object ValueFrequency {
 
-  implicit def sortedIterableToValueFrequencyIterable[T](it: SortedTraversable[T])(implicit n: Numeric[T]): Iterable[ValueFrequency[T]] = new Iterable[ValueFrequency[T]] {
-    def iterator: Iterator[ValueFrequency[T]] = new Iterator[ValueFrequency[T]] {
-      val _it = it.iterator
-      var lastValue = Option.empty[T]
-
-      @scala.annotation.tailrec
-      def loadValueFrequency(v: ValueFrequency[T]): ValueFrequency[T] = if (_it.hasNext) {
-        val x = _it.next()
-        if (n.equiv(x, v.value)) {
-          loadValueFrequency(v.copy(frequency = v.frequency + 1))
-        } else {
-          lastValue = Some(x)
-          v
+  implicit def sortedTraversableToValueFrequencyTraversable[T](it: SortedTraversable[T])(implicit n: Numeric[T]): Traversable[ValueFrequency[T]] = new Traversable[ValueFrequency[T]] {
+    def foreach[U](f: ValueFrequency[T] => U): Unit = {
+      var lastValue: Option[ValueFrequency[T]] = None
+      for (value <- it) {
+        lastValue match {
+          case Some(x) if n.equiv(x.value, value) => lastValue = Some(x.copy(frequency = x.frequency + 1))
+          case _ =>
+            lastValue.foreach(f)
+            lastValue = Some(ValueFrequency(value, 1))
         }
-      } else {
-        lastValue = None
-        v
       }
-
-      def hasNext: Boolean = _it.hasNext || lastValue.nonEmpty
-
-      def next(): ValueFrequency[T] = loadValueFrequency(ValueFrequency(lastValue.getOrElse(_it.next()), 1))
+      lastValue.foreach(f)
     }
   }
 

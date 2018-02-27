@@ -8,22 +8,18 @@ import eu.easyminer.discretization.impl.{Interval, IntervalBound}
   */
 class EquidistantIntervals[T] private[algorithm](bins: Int)(implicit val n: Numeric[T]) extends Discretization[T] {
 
-  def discretize(data: Traversable[T]): Traversable[impl.Interval] = new Traversable[impl.Interval] {
-    def foreach[U](f: Interval => U): Unit = {
-      data.view
-        .map(x => (x, x))
-        .reduceOption((x, y) => n.min(x._1, y._1) -> n.max(x._2, y._2))
-        .map(x => n.toDouble(x._1) -> n.toDouble(x._2))
-        .toIterator
-        .flatMap { case (min, max) =>
-          val intervalSize = (max - min) / bins
-          for (binNumber <- 0 until bins) yield {
-            val leftBound = IntervalBound.Inclusive(min + intervalSize * binNumber)
-            val rightBound = if (binNumber + 1 == bins) IntervalBound.Inclusive(max) else IntervalBound.Exclusive(leftBound.value + intervalSize)
-            Interval(leftBound, rightBound)
-          }
-        }.foreach(f)
-    }
-  }
+  def discretize(data: Traversable[T]): Array[impl.Interval] = data.view
+    .map(x => (x, x))
+    .reduceOption((x, y) => n.min(x._1, y._1) -> n.max(x._2, y._2))
+    .map(x => n.toDouble(x._1) -> n.toDouble(x._2))
+    .toIterator
+    .flatMap { case (min, max) =>
+      val intervalSize = (max - min) / bins
+      for (binNumber <- 0 until bins) yield {
+        val leftBound = IntervalBound.Inclusive(min + intervalSize * binNumber)
+        val rightBound = if (binNumber + 1 == bins) IntervalBound.Inclusive(max) else IntervalBound.Exclusive(leftBound.value + intervalSize)
+        Interval(leftBound, rightBound)
+      }
+    }.toArray
 
 }

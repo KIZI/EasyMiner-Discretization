@@ -17,13 +17,13 @@ trait IterableConversions {
 
   implicit class PimpedJavaIterable[A <: Number](it: java.lang.Iterable[A]) {
 
-    def asScala[B](implicit n: Numeric[B], numberToScalaNumber: A => B): Iterable[B] = {
+    def asScala[B](implicit n: Numeric[B], numberToScalaNumber: A => B): Traversable[B] = {
       implicit val c: java.util.Iterator[A] => Iterator[B] = javaIteratorToIterator[A, B]
       it match {
         case it: ReversableSortedIterable[A] => it: sorting.ReversableSortedTraversable[B]
         case it: SortedIterable[A] => it: sorting.SortedTraversable[B]
-        case _ => new Iterable[B] {
-          def iterator: Iterator[B] = it.iterator()
+        case _ => new Traversable[B] {
+          def foreach[U](f: B => U): Unit = it.iterator().foreach(f)
         }
       }
     }

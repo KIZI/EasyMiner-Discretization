@@ -11,13 +11,13 @@ sealed trait Support
 
 object Support {
 
+  case class Relative(support: Double) extends Support
+
+  case class Absolute(support: Int) extends Support
+
   implicit def javaSupportToSupport(support: discretization.Support): Support = support match {
-    case s: discretization.RelativeSupport => RelativeSupport(s.getSupport)
-    case s: discretization.AbsoluteSupport => AbsoluteSupport(s.getSupport)
+    case s: discretization.RelativeSupport => Relative(s.getSupport)
+    case s: discretization.AbsoluteSupport => Absolute(s.getSupport)
   }
 
 }
-
-case class RelativeSupport(support: Double) extends Support
-
-case class AbsoluteSupport(support: Int) extends Support

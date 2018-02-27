@@ -1,7 +1,7 @@
 package eu.easyminer.discretization.algorithm
 
 import eu.easyminer.discretization.algorithm.CutpointsResolver._
-import eu.easyminer.discretization.algorithm.Discretization.Exceptions.IllegalTypeOfIterable
+import eu.easyminer.discretization.algorithm.Discretization.Exceptions.IllegalTypeOfTraversable
 import eu.easyminer.discretization.algorithm.IntervalSmoothing._
 import eu.easyminer.discretization.impl._
 import eu.easyminer.discretization.impl.sorting.SortedTraversable
@@ -11,20 +11,20 @@ import eu.easyminer.discretization.impl.sorting.SortedTraversable
   */
 class EquisizedIntervals[T] private[algorithm](minSupport: Support)(implicit val n: Numeric[T]) extends Discretization[T] {
 
-  private def countOptimalFrequency(data: Iterable[T]) = minSupport match {
-    case RelativeSupport(minSupport) => math.ceil(data.iterator.size * minSupport).toInt
-    case AbsoluteSupport(minSupport) => minSupport
+  private def countOptimalFrequency(data: Traversable[T]) = minSupport match {
+    case Support.Relative(minSupport) => math.ceil(data.size * minSupport).toInt
+    case Support.Absolute(minSupport) => minSupport
   }
 
-  private def searchIntervals(data: Iterable[ValueFrequency[T]], optimalFrequency: Int) = {
+  private def searchIntervals(data: Traversable[ValueFrequency[T]], optimalFrequency: Int) = {
     val intervals = new collection.mutable.ArrayBuffer[IntervalFrequency]()
-    for (value <- data.iterator) {
+    for (value <- data) {
       intervals
         .lastOption
         .filter(interval => interval.frequency < optimalFrequency) match {
-        case Some(interval) => intervals.update(intervals.length - 1, IntervalFrequency(interval.interval.copy(maxValue = InclusiveIntervalBound(n.toDouble(value.value))), interval.frequency + value.frequency))
+        case Some(interval) => intervals.update(intervals.length - 1, IntervalFrequency(interval.interval.copy(maxValue = IntervalBound.Inclusive(n.toDouble(value.value))), interval.frequency + value.frequency))
         case None =>
-          val leftRightBound = InclusiveIntervalBound(n.toDouble(value.value))
+          val leftRightBound = IntervalBound.Inclusive(n.toDouble(value.value))
           intervals += IntervalFrequency(Interval(leftRightBound, leftRightBound), value.frequency)
       }
     }
@@ -52,14 +52,14 @@ class EquisizedIntervals[T] private[algorithm](minSupport: Support)(implicit val
     decreasedIntervalFreqency >= optimalFrequency && nextDifference < currentDifference
   }
 
-  def discretize(data: Iterable[T]): Seq[Interval] = data match {
+  def discretize(data: Traversable[T]): Array[Interval] = data match {
     case data: SortedTraversable[T] =>
       val optimalFrequency = countOptimalFrequency(data)
       val intervals = searchIntervals(data, optimalFrequency)
       smoothIntervals(intervals, data, 1000000)(canItMoveLeft(optimalFrequency))(canItMoveRight(optimalFrequency))
       resolveCutpoints(intervals)
-      intervals.iterator.map(_.interval).toList
-    case _ => throw new IllegalTypeOfIterable(classOf[SortedTraversable[T]], data.getClass)
+      intervals.iterator.map(_.interval).toArray
+    case _ => throw new IllegalTypeOfTraversable(classOf[SortedTraversable[T]], data.getClass)
   }
 
 }

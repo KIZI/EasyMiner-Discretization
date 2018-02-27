@@ -1,30 +1,34 @@
 package eu.easyminer.discretization.impl
 
-import eu.easyminer.discretization
+import java.lang
 
-import scala.language.implicitConversions
+import eu.easyminer.discretization
 
 /**
   * Created by propan on 16. 3. 2017.
   */
-case class Interval(minValue: IntervalBound, maxValue: IntervalBound)
+case class Interval(minValue: IntervalBound, maxValue: IntervalBound) extends discretization.Interval {
+  def getLeftBoundValue: lang.Double = minValue.value
 
-object Interval {
+  def getRightBoundValue: lang.Double = maxValue.value
 
-  implicit def intervalToJavaInterval(interval: Interval): discretization.Interval = new discretization.Interval {
-    def getLeftBoundValue: java.lang.Double = interval.minValue.value
+  def isLeftBoundOpened: lang.Boolean = minValue.isInstanceOf[IntervalBound.Exclusive]
 
-    def getRightBoundValue: java.lang.Double = interval.maxValue.value
+  def isRightBoundOpened: lang.Boolean = maxValue.isInstanceOf[IntervalBound.Exclusive]
 
-    def isLeftBoundClosed: java.lang.Boolean = interval.minValue.isInstanceOf[IntervalBound.Inclusive]
+  def isLeftBoundClosed: lang.Boolean = !isLeftBoundOpened
 
-    def isRightBoundClosed: java.lang.Boolean = interval.maxValue.isInstanceOf[IntervalBound.Inclusive]
+  def isRightBoundClosed: lang.Boolean = !isRightBoundOpened
 
-    def isLeftBoundOpened: java.lang.Boolean = !isLeftBoundClosed
-
-    def isRightBoundOpened: java.lang.Boolean = !isRightBoundClosed
+  def isInInterval(value: Double): lang.Boolean = {
+    val isGtMinValue = minValue match {
+      case IntervalBound.Inclusive(x) => value >= x
+      case IntervalBound.Exclusive(x) => value > x
+    }
+    val isLtMaxValue = maxValue match {
+      case IntervalBound.Inclusive(x) => value <= x
+      case IntervalBound.Exclusive(x) => value < x
+    }
+    isGtMinValue && isLtMaxValue
   }
-
-  implicit def seqIntervalsToArrayJavaIntervals(intervals: Seq[Interval]): Array[discretization.Interval] = intervals.iterator.map(x => x: discretization.Interval).toArray
-
 }

@@ -13,6 +13,7 @@ import eu.easyminer.discretization.util.ReversedFileInputStream
 object SortedPersistentNumericTraversable {
 
   def apply[A, B](col: Traversable[A], directory: File, bufferSize: Int)(f: ReversableSortedTraversable[A] => B)(implicit n: Numeric[A]): B = {
+    implicit val b2n: Array[Byte] => A = byteArrayToNumber[A]
     val ems = new ExternalMergeSort(bufferSize)
     lazy val sortedFile = ems.sort(col, directory)
     try {
@@ -31,6 +32,7 @@ object SortedPersistentNumericTraversable {
   }
 
   def apply[A, B](col: SortedTraversable[A], file: File)(f: ReversableSortedTraversable[A] => B)(implicit n: Numeric[A]): B = PersistentNumericTraversable(col, file) { col =>
+    implicit val b2n: Array[Byte] => A = byteArrayToNumber[A]
     val rst = new ReversableSortedTraversable[A](
       col,
       new Traversable[A] {

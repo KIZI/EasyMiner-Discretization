@@ -11,7 +11,7 @@ trait Discretization[T] {
 
   implicit val n: Numeric[T]
 
-  def discretize(data: Traversable[T]): Traversable[impl.Interval]
+  def discretize(data: Traversable[T]): Array[impl.Interval]
 
 }
 
@@ -19,7 +19,7 @@ object Discretization {
 
   object Exceptions {
 
-    class IllegalTypeOfIterable(expected: Class[_], given: Class[_]) extends Exception("Illegal type of input iterable. Expected: " + expected.getSimpleName + ", given: " + given.getSimpleName)
+    class IllegalTypeOfTraversable(expected: Class[_], given: Class[_]) extends Exception("Illegal type of input traversable. Expected: " + expected.getSimpleName + ", given: " + given.getSimpleName)
 
     object UnsupportedDiscretizationTask extends Exception("Unsupported discretization task.")
 

@@ -9,7 +9,7 @@ import eu.easyminer.discretization.util.PersistentTraversableOps._
   * Created by propan on 17. 3. 2017.
   */
 class PersistentNumericTraversable[T] private(col: Traversable[T], file: File)(implicit n: Numeric[T]) extends Traversable[T] {
-  //implicit private val b2n: Array[Byte] => T = byteArrayToNumber[T]
+  implicit private val b2n: Array[Byte] => T = byteArrayToNumber[T]
   def foreach[U](f: T => U): Unit = if (file.exists()) inputStreamTraversable[T](new FileInputStream(file)).foreach(f) else outputStreamTraversable(col, new FileOutputStream(file))
 }
 

@@ -1,6 +1,6 @@
-name := "easyminer-discretization"
+name := "EasyMiner-Discretization"
 
-organization := "eu.easyminer"
+organization := "com.github.KIZI"
 
 version := "1.1.0"
 

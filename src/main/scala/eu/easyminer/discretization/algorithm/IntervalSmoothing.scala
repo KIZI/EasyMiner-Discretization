@@ -3,7 +3,7 @@ package eu.easyminer.discretization.algorithm
 import java.util
 
 import eu.easyminer.discretization.impl.sorting.SortedTraversable
-import eu.easyminer.discretization.impl.{InclusiveIntervalBound, IntervalFrequency, ValueFrequency}
+import eu.easyminer.discretization.impl.{IntervalBound, IntervalFrequency, ValueFrequency}
 import eu.easyminer.discretization.util.NumericByteArray._
 
 /**
@@ -17,7 +17,7 @@ trait IntervalSmoothing {
                         (implicit n: Numeric[T]): Unit = {
     if (bufferSize < 32) throw new IllegalArgumentException("Buffer size for smoothing must be greater than 31 bytes.")
     //input data are converted into ValueFrequency - it is aggregated distinct values with their count
-    val groupedData: Iterable[ValueFrequency[T]] = records
+    val groupedData: Traversable[ValueFrequency[T]] = records
     //values buffer for faster smoothing iteration
     val buffer = new util.LinkedList[ValueFrequency[T]]()
     //miximal number of values in the buffer
@@ -25,7 +25,7 @@ trait IntervalSmoothing {
     //smooth until there are no interval changes
     val iterates = Iterator.continually {
       //within each smoothing iteration all sorted data are iterated
-      groupedData.iterator.foldLeft(0, false) { case ((pointer, isChanged), currentValue) =>
+      groupedData.foldLeft(0, false) { case ((pointer, isChanged), currentValue) =>
         if (pointer < intervals.length - 1) {
           //we have two intervals to compare
           val leftInterval = intervals(pointer)
@@ -42,11 +42,11 @@ trait IntervalSmoothing {
             pointer + 1
           }
           //this method moves right interval border into the left interval
-          def moveToLeft() = {
+          def moveToLeft(): Unit = {
             //new left interval has right border as prevValue = add prev value into the left interval
             intervals.update(pointer, IntervalFrequency(leftInterval.interval.copy(maxValue = rightInterval.interval.minValue), leftInterval.frequency + prevValue.get.frequency))
             //new right interval has left border as currentValue = remove prev value from the right interval
-            intervals.update(pointer + 1, IntervalFrequency(rightInterval.interval.copy(minValue = InclusiveIntervalBound(n.toDouble(currentValue.value))), rightInterval.frequency - prevValue.get.frequency))
+            intervals.update(pointer + 1, IntervalFrequency(rightInterval.interval.copy(minValue = IntervalBound.Inclusive(n.toDouble(currentValue.value))), rightInterval.frequency - prevValue.get.frequency))
           }
           //this method moves left interval borders into the right interval
           //it moves border from all items in the buffer until condition
@@ -59,7 +59,7 @@ trait IntervalSmoothing {
             val currentValue = buffer.pollFirst()
             val prevValue = buffer.getFirst
             //new left interval has right border as prevValue = delete current from the left interval
-            val newLeftInterval = IntervalFrequency(leftInterval.interval.copy(maxValue = InclusiveIntervalBound(n.toDouble(prevValue.value))), leftInterval.frequency - currentValue.frequency)
+            val newLeftInterval = IntervalFrequency(leftInterval.interval.copy(maxValue = IntervalBound.Inclusive(n.toDouble(prevValue.value))), leftInterval.frequency - currentValue.frequency)
             //new right interval has left border as currentValue = add current into the right interval
             val newRightInterval = IntervalFrequency(rightInterval.interval.copy(minValue = leftInterval.interval.maxValue), rightInterval.frequency + currentValue.frequency)
             //do it again
