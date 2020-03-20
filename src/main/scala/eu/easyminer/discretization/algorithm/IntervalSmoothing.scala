@@ -3,7 +3,7 @@ package eu.easyminer.discretization.algorithm
 import java.util
 
 import eu.easyminer.discretization.impl.sorting.SortedTraversable
-import eu.easyminer.discretization.impl.{IntervalBound, IntervalFrequency, ValueFrequency}
+import eu.easyminer.discretization.impl.{Interval, IntervalBound, ValueFrequency}
 import eu.easyminer.discretization.util.NumericByteArray._
 
 /**
@@ -11,9 +11,9 @@ import eu.easyminer.discretization.util.NumericByteArray._
   */
 trait IntervalSmoothing {
 
-  def smoothIntervals[T](intervals: collection.mutable.ArrayBuffer[IntervalFrequency], records: SortedTraversable[T], bufferSize: Int)
-                        (canItMoveLeft: (ValueFrequency[T], IntervalFrequency, IntervalFrequency) => Boolean)
-                        (canItMoveRight: (ValueFrequency[T], IntervalFrequency, IntervalFrequency) => Boolean)
+  def smoothIntervals[T](intervals: collection.mutable.ArrayBuffer[Interval.WithFrequency], records: SortedTraversable[T], bufferSize: Int)
+                        (canItMoveLeft: (ValueFrequency[T], Interval.WithFrequency, Interval.WithFrequency) => Boolean)
+                        (canItMoveRight: (ValueFrequency[T], Interval.WithFrequency, Interval.WithFrequency) => Boolean)
                         (implicit n: Numeric[T]): Unit = {
     if (bufferSize < 32) throw new IllegalArgumentException("Buffer size for smoothing must be greater than 31 bytes.")
     //input data are converted into ValueFrequency - it is aggregated distinct values with their count
@@ -44,14 +44,14 @@ trait IntervalSmoothing {
           //this method moves right interval border into the left interval
           def moveToLeft(): Unit = {
             //new left interval has right border as prevValue = add prev value into the left interval
-            intervals.update(pointer, IntervalFrequency(leftInterval.interval.copy(maxValue = rightInterval.interval.minValue), leftInterval.frequency + prevValue.get.frequency))
+            intervals.update(pointer, leftInterval.copy(maxValue = rightInterval.minValue, frequency = leftInterval.frequency + prevValue.get.frequency))
             //new right interval has left border as currentValue = remove prev value from the right interval
-            intervals.update(pointer + 1, IntervalFrequency(rightInterval.interval.copy(minValue = IntervalBound.Inclusive(n.toDouble(currentValue.value))), rightInterval.frequency - prevValue.get.frequency))
+            intervals.update(pointer + 1, rightInterval.copy(minValue = IntervalBound.Inclusive(n.toDouble(currentValue.value)), frequency = rightInterval.frequency - prevValue.get.frequency))
           }
           //this method moves left interval borders into the right interval
           //it moves border from all items in the buffer until condition
           @scala.annotation.tailrec
-          def moveToRight(leftInterval: IntervalFrequency, rightInterval: IntervalFrequency): Unit = if (leftInterval.frequency > rightInterval.frequency && buffer.size() > 1 && leftInterval.interval.maxValue.value > leftInterval.interval.minValue.value) {
+          def moveToRight(leftInterval: Interval.WithFrequency, rightInterval: Interval.WithFrequency): Unit = if (leftInterval.frequency > rightInterval.frequency && buffer.size() > 1 && leftInterval.maxValue.value > leftInterval.minValue.value) {
             //COND1: left interval is greater than right
             //COND2: buffer has minimal two values
             //COND3: left interval max values is greater then left interval min values - this prevents to move values which are not contain in the left interval
@@ -59,9 +59,9 @@ trait IntervalSmoothing {
             val currentValue = buffer.pollFirst()
             val prevValue = buffer.getFirst
             //new left interval has right border as prevValue = delete current from the left interval
-            val newLeftInterval = IntervalFrequency(leftInterval.interval.copy(maxValue = IntervalBound.Inclusive(n.toDouble(prevValue.value))), leftInterval.frequency - currentValue.frequency)
+            val newLeftInterval = leftInterval.copy(maxValue = IntervalBound.Inclusive(n.toDouble(prevValue.value)), frequency = leftInterval.frequency - currentValue.frequency)
             //new right interval has left border as currentValue = add current into the right interval
-            val newRightInterval = IntervalFrequency(rightInterval.interval.copy(minValue = leftInterval.interval.maxValue), rightInterval.frequency + currentValue.frequency)
+            val newRightInterval = rightInterval.copy(minValue = leftInterval.maxValue, frequency = rightInterval.frequency + currentValue.frequency)
             //do it again
             moveToRight(newLeftInterval, newRightInterval)
           } else {
@@ -70,7 +70,7 @@ trait IntervalSmoothing {
             intervals.update(pointer, leftInterval)
             intervals.update(pointer + 1, rightInterval)
           }
-          if (rightInterval.frequency > leftInterval.frequency && prevValue.exists(x => n.toDouble(x.value) == rightInterval.interval.minValue.value)) {
+          if (rightInterval.frequency > leftInterval.frequency && prevValue.exists(x => n.toDouble(x.value) == rightInterval.minValue.value)) {
             //right side is greater than left side - move to left!
             //and prev value equals right interval "from" border
             if (canItMoveLeft(prevValue.get, leftInterval, rightInterval)) {
@@ -80,13 +80,13 @@ trait IntervalSmoothing {
               //if current value is right interval max value then clear the buffer and move the window pointer
               //next value afrer current value will not be contained in the right interval therefore we need to move intervals window
               //else keep the current window and in the next iteration we will try to move other values to the left interval
-              val nextPointer = if (n.toDouble(currentValue.value) == rightInterval.interval.maxValue.value) nextPointerAndClearBuffer() else pointer
+              val nextPointer = if (n.toDouble(currentValue.value) == rightInterval.maxValue.value) nextPointerAndClearBuffer() else pointer
               (nextPointer, true)
             } else {
               //no moves possible, clear buffer and move window pointer
               (nextPointerAndClearBuffer(), isChanged)
             }
-          } else if (rightInterval.frequency < leftInterval.frequency && n.toDouble(currentValue.value) == leftInterval.interval.maxValue.value && prevValue.nonEmpty) {
+          } else if (rightInterval.frequency < leftInterval.frequency && n.toDouble(currentValue.value) == leftInterval.maxValue.value && prevValue.nonEmpty) {
             //left side is greater than right side - move to right!
             //and previous record is not empty
             //and current record is left interval max value
@@ -100,10 +100,10 @@ trait IntervalSmoothing {
               //no moves possible, clear buffer and move window pointer
               (nextPointerAndClearBuffer(), isChanged)
             }
-          } else if (leftInterval.frequency == rightInterval.frequency && n.toDouble(currentValue.value) == leftInterval.interval.maxValue.value) {
+          } else if (leftInterval.frequency == rightInterval.frequency && n.toDouble(currentValue.value) == leftInterval.maxValue.value) {
             //intervals are equal -> no moves
             (nextPointerAndClearBuffer(), isChanged)
-          } else if (n.toDouble(currentValue.value) == rightInterval.interval.maxValue.value) {
+          } else if (n.toDouble(currentValue.value) == rightInterval.maxValue.value) {
             //it is the last cutpoint within a current window, we need to change pointer to the next interval
             (pointer + 1, isChanged)
           } else {

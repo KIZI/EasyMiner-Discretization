@@ -3,7 +3,7 @@ package eu.easyminer.discretization.impl
 import java.io.File
 
 import eu.easyminer.discretization
-import eu.easyminer.discretization.algorithm.{Discretization, EquidistantIntervals, EquifrequentIntervals, EquisizedIntervals}
+import eu.easyminer.discretization.algorithm.{Discretization, EquidistantIntervals, EquifrequentIntervals, EquisizedIntervals, EquisizedIntervalsTree}
 import eu.easyminer.discretization.impl.IterableConversions._
 import eu.easyminer.discretization.impl.sorting.{SortedInMemoryNumericTraversable, SortedPersistentNumericTraversable}
 import eu.easyminer.discretization.{Discretizable, DiscretizationTask}
@@ -27,7 +27,7 @@ object DefaultDiscretization extends Discretizable {
     val dt = Discretization(discretizationTask)
     dt match {
       case dt: EquidistantIntervals[B] => dt.discretize(data.asScala).toArray
-      case _: EquifrequentIntervals[B] | _: EquisizedIntervals[B] => data match {
+      case _: EquifrequentIntervals[B] | _: EquisizedIntervals[B] | _: EquisizedIntervalsTree[B] => data match {
         case data: discretization.SortedIterable[A] with discretization.PersistentIterable[A] =>
           SortedPersistentNumericTraversable[B, Traversable[Interval]](data, file)(dt.discretize).toArray
         case data: discretization.InMemoryIterable[A] =>

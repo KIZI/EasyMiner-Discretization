@@ -17,15 +17,15 @@ class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Num
   }
 
   private def searchIntervals(data: Traversable[ValueFrequency[T]], optimalFrequency: Int) = {
-    val intervals = new collection.mutable.ArrayBuffer[IntervalFrequency](bins)
+    val intervals = new collection.mutable.ArrayBuffer[Interval.WithFrequency](bins)
     for (value <- data) {
       intervals
         .lastOption
         .filter(interval => intervals.length == bins || math.abs(optimalFrequency - (interval.frequency + value.frequency)) < math.abs(optimalFrequency - interval.frequency)) match {
-        case Some(interval) => intervals.update(intervals.length - 1, IntervalFrequency(interval.interval.copy(maxValue = IntervalBound.Inclusive(n.toDouble(value.value))), interval.frequency + value.frequency))
+        case Some(interval) => intervals.update(intervals.length - 1, interval.copy(maxValue = IntervalBound.Inclusive(n.toDouble(value.value)), frequency = interval.frequency + value.frequency))
         case None =>
           val leftRightBound = IntervalBound.Inclusive(n.toDouble(value.value))
-          intervals += IntervalFrequency(Interval(leftRightBound, leftRightBound), value.frequency)
+          intervals += Interval(leftRightBound, leftRightBound, value.frequency)
       }
     }
     intervals
@@ -41,7 +41,7 @@ class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Num
   //                       ^^ +          ^ = 2 + 1 = 3
   //if nextScore is lower than currentScore, make shift!
   //go to the next interval
-  private def canItMoveLeft(optimalFrequency: Int)(movedValue: ValueFrequency[T], leftInterval: IntervalFrequency, rightInterval: IntervalFrequency) = {
+  private def canItMoveLeft(optimalFrequency: Int)(movedValue: ValueFrequency[T], leftInterval: Interval.WithFrequency, rightInterval: Interval.WithFrequency) = {
     val currentScore = math.abs(optimalFrequency - rightInterval.frequency) + math.abs(optimalFrequency - leftInterval.frequency)
     val nextScore = math.abs(optimalFrequency - (rightInterval.frequency - movedValue.frequency)) + math.abs(optimalFrequency - (leftInterval.frequency + movedValue.frequency))
     val currentDifference = math.abs(rightInterval.frequency - leftInterval.frequency)
@@ -51,7 +51,7 @@ class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Num
 
   //before: prevInterval[f1, t1;--------------] > currentInterval(f2, t2;----______)
   //                                      ^^^^--------->-move->--------------^ <- moved part is lastValue == t1
-  private def canItMoveRight(optimalFrequency: Int)(movedValue: ValueFrequency[T], leftInterval: IntervalFrequency, rightInterval: IntervalFrequency) = {
+  private def canItMoveRight(optimalFrequency: Int)(movedValue: ValueFrequency[T], leftInterval: Interval.WithFrequency, rightInterval: Interval.WithFrequency) = {
     val currentScore = math.abs(optimalFrequency - rightInterval.frequency) + math.abs(optimalFrequency - leftInterval.frequency)
     val nextScore = math.abs(optimalFrequency - (rightInterval.frequency + movedValue.frequency)) + math.abs(optimalFrequency - (leftInterval.frequency - movedValue.frequency))
     val currentDifference = math.abs(rightInterval.frequency - leftInterval.frequency)
@@ -60,13 +60,13 @@ class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Num
   }
 
 
-  def discretize(data: Traversable[T]): Array[Interval] = data match {
+  def discretize(data: Traversable[T]): IndexedSeq[Interval.WithFrequency] = data match {
     case data: SortedTraversable[T] =>
       val optimalFrequency = countOptimalFrequency(data)
       val intervals = searchIntervals(data, optimalFrequency)
       smoothIntervals(intervals, data, 1000000)(canItMoveLeft(optimalFrequency))(canItMoveRight(optimalFrequency))
-      resolveCutpoints(intervals)
-      intervals.iterator.map(_.interval).toArray
+      resolveCutpoints(intervals.asInstanceOf[collection.mutable.ArrayBuffer[Interval]])
+      intervals.toIndexedSeq
     case _ => throw new IllegalTypeOfTraversable(classOf[SortedTraversable[T]], data.getClass)
   }
 

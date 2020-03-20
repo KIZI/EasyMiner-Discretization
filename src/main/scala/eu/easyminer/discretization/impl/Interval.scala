@@ -7,7 +7,10 @@ import eu.easyminer.discretization
 /**
   * Created by propan on 16. 3. 2017.
   */
-case class Interval(minValue: IntervalBound, maxValue: IntervalBound) extends discretization.Interval {
+sealed trait Interval extends discretization.Interval {
+  val minValue: IntervalBound
+  val maxValue: IntervalBound
+
   def getLeftBoundValue: lang.Double = minValue.value
 
   def getRightBoundValue: lang.Double = maxValue.value
@@ -20,6 +23,10 @@ case class Interval(minValue: IntervalBound, maxValue: IntervalBound) extends di
 
   def isRightBoundClosed: lang.Boolean = !isRightBoundOpened
 
+  def withMinValue(minValue: IntervalBound): Interval
+
+  def withMaxValue(maxValue: IntervalBound): Interval
+
   def isInInterval(value: Double): lang.Boolean = {
     val isGtMinValue = minValue match {
       case IntervalBound.Inclusive(x) => value >= x
@@ -31,4 +38,24 @@ case class Interval(minValue: IntervalBound, maxValue: IntervalBound) extends di
     }
     isGtMinValue && isLtMaxValue
   }
+}
+
+object Interval {
+
+  def apply(minValue: IntervalBound, maxValue: IntervalBound): Interval.Simple = Simple(minValue, maxValue)
+
+  def apply(minValue: IntervalBound, maxValue: IntervalBound, frequency: Int): Interval.WithFrequency = WithFrequency(minValue, maxValue, frequency)
+
+  case class Simple(minValue: IntervalBound, maxValue: IntervalBound) extends Interval {
+    def withMinValue(minValue: IntervalBound): Interval = copy(minValue = minValue)
+
+    def withMaxValue(maxValue: IntervalBound): Interval = copy(maxValue = maxValue)
+  }
+
+  case class WithFrequency(minValue: IntervalBound, maxValue: IntervalBound, frequency: Int) extends Interval {
+    def withMinValue(minValue: IntervalBound): Interval = copy(minValue = minValue)
+
+    def withMaxValue(maxValue: IntervalBound): Interval = copy(maxValue = maxValue)
+  }
+
 }

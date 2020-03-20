@@ -1,6 +1,6 @@
 package eu.easyminer.discretization
 
-import eu.easyminer.discretization.task.{EquidistanceDiscretizationTask, EquifrequencyDiscretizationTask, EquisizeDiscretizationTask}
+import eu.easyminer.discretization.task.{EquidistanceDiscretizationTask, EquifrequencyDiscretizationTask, EquisizeDiscretizationTask, EquisizeTreeDiscretizationTask}
 import eu.easyminer.discretization.util.HowLong._
 
 import scala.collection.JavaConverters._
@@ -33,7 +33,17 @@ object Main extends App {
     def getBufferSize: Int = 10000000
   }, it, classOf[java.lang.Double]))
 
-  Iterator(r1, r2, r3).foreach { r =>
+  val r4 = howLong("equisizetree")(DefaultDiscretization.getInstance().discretize(new EquisizeTreeDiscretizationTask {
+    def getMinSupport: Support = new RelativeSupport(0.05)
+
+    def getArity: Int = 2
+
+    def inParallel(): Boolean = true
+
+    def getBufferSize: Int = 10000000
+  }, it, classOf[java.lang.Double]))
+
+  Iterator(r1, r2, r3, r4).foreach { r =>
     println("**********************")
     r.foreach { x =>
       println(s"[${x.getLeftBoundValue},${x.getRightBoundValue}]")

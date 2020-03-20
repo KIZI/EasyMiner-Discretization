@@ -1,6 +1,6 @@
 package eu.easyminer.discretization.algorithm
 
-import eu.easyminer.discretization.task.{EquidistanceDiscretizationTask, EquifrequencyDiscretizationTask, EquisizeDiscretizationTask}
+import eu.easyminer.discretization.task.{EquidistanceDiscretizationTask, EquifrequencyDiscretizationTask, EquisizeDiscretizationTask, EquisizeTreeDiscretizationTask}
 import eu.easyminer.discretization.{DiscretizationTask, impl}
 import DiscretizationTaskValidator.{apply => validate}
 
@@ -11,7 +11,7 @@ trait Discretization[T] {
 
   implicit val n: Numeric[T]
 
-  def discretize(data: Traversable[T]): Array[impl.Interval]
+  def discretize(data: Traversable[T]): IndexedSeq[impl.Interval]
 
 }
 
@@ -37,6 +37,9 @@ object Discretization {
       case dt: EquisizeDiscretizationTask =>
         validate(dt)
         new EquisizedIntervals(dt.getMinSupport)
+      case dt: EquisizeTreeDiscretizationTask =>
+        validate(dt)
+        new EquisizedIntervalsTree[T](dt.getMinSupport, dt.getArity, dt.inParallel())
       case _ => throw Exceptions.UnsupportedDiscretizationTask
     }
   }

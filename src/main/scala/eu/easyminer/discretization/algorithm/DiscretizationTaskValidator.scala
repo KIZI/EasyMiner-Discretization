@@ -1,9 +1,10 @@
 package eu.easyminer.discretization.algorithm
 
+import eu.easyminer.discretization
 import eu.easyminer.discretization.DiscretizationTask
 import eu.easyminer.discretization.algorithm.DiscretizationTaskValidator.Exceptions.InvalidDiscretizationTask
 import eu.easyminer.discretization.impl.Support
-import eu.easyminer.discretization.task.{EquidistanceDiscretizationTask, EquifrequencyDiscretizationTask, EquisizeDiscretizationTask}
+import eu.easyminer.discretization.task.{EquidistanceDiscretizationTask, EquifrequencyDiscretizationTask, EquisizeDiscretizationTask, EquisizeTreeDiscretizationTask}
 
 /**
   * Created by propan on 2. 4. 2017.
@@ -35,6 +36,15 @@ object DiscretizationTaskValidator {
   implicit val equisizeDiscretizationTaskValidator: DiscretizationTaskValidator[EquisizeDiscretizationTask] = (dt: EquisizeDiscretizationTask) => (dt.getMinSupport: Support) match {
     case Support.Absolute(s) => throwIfFalse("Absolute support must be greater than 1.")(s > 1)
     case Support.Relative(s) => throwIfFalse("Relative support must be greater than zero and lower than 1")(s > 0 && s < 1)
+  }
+
+  implicit val equisizeTreeDiscretizationTaskValidator: DiscretizationTaskValidator[EquisizeTreeDiscretizationTask] = (dt: EquisizeTreeDiscretizationTask) => {
+    apply(new EquisizeDiscretizationTask {
+      def getMinSupport: discretization.Support = dt.getMinSupport
+
+      def getBufferSize: Int = dt.getBufferSize
+    })
+    throwIfFalse("The tree arity must be greater than 1.")(dt.getArity >= 2)
   }
 
 }
