@@ -3,20 +3,20 @@ package eu.easyminer.discretization.algorithm
 import eu.easyminer.discretization.algorithm.CutpointsResolver._
 import eu.easyminer.discretization.algorithm.Discretization.Exceptions.IllegalTypeOfTraversable
 import eu.easyminer.discretization.algorithm.IntervalSmoothing._
-import eu.easyminer.discretization.impl.sorting.SortedTraversable
 import eu.easyminer.discretization.impl._
+import eu.easyminer.discretization.impl.sorting.SortedProducer
 
 /**
   * Created by propan on 18. 3. 2017.
   */
 class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Numeric[T]) extends Discretization[T] {
 
-  private def countOptimalFrequency(data: Traversable[T]) = {
+  private def countOptimalFrequency(data: Producer[T]) = {
     val dataCount = data.size
     math.ceil(dataCount / bins).toInt
   }
 
-  private def searchIntervals(data: Traversable[ValueFrequency[T]], optimalFrequency: Int) = {
+  private def searchIntervals(data: Producer[ValueFrequency[T]], optimalFrequency: Int) = {
     val intervals = new collection.mutable.ArrayBuffer[Interval.WithFrequency](bins)
     for (value <- data) {
       intervals
@@ -60,14 +60,14 @@ class EquifrequentIntervals[T] private[algorithm](bins: Int)(implicit val n: Num
   }
 
 
-  def discretize(data: Traversable[T]): IndexedSeq[Interval.WithFrequency] = data match {
-    case data: SortedTraversable[T] =>
+  def discretize(data: Producer[T]): IndexedSeq[Interval.WithFrequency] = data match {
+    case data: SortedProducer[T] =>
       val optimalFrequency = countOptimalFrequency(data)
       val intervals = searchIntervals(data, optimalFrequency)
       smoothIntervals(intervals, data, 1000000)(canItMoveLeft(optimalFrequency))(canItMoveRight(optimalFrequency))
       resolveCutpoints(intervals.asInstanceOf[collection.mutable.ArrayBuffer[Interval]])
       intervals.toIndexedSeq
-    case _ => throw new IllegalTypeOfTraversable(classOf[SortedTraversable[T]], data.getClass)
+    case _ => throw new IllegalTypeOfTraversable(classOf[SortedProducer[T]], data.getClass)
   }
 
 }

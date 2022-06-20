@@ -5,7 +5,7 @@ package eu.easyminer.discretization;
  */
 public class RelativeSupport extends Support {
 
-    private double support;
+    private final double support;
 
     public RelativeSupport(double support) {
         this.support = support;

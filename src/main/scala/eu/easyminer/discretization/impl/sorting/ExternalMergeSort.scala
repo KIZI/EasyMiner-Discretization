@@ -1,7 +1,8 @@
 package eu.easyminer.discretization.impl.sorting
 
-import java.io._
+import eu.easyminer.discretization.impl.Producer
 
+import java.io._
 import eu.easyminer.discretization.util.NumericByteArray._
 
 import scala.collection.mutable
@@ -14,7 +15,7 @@ class ExternalMergeSort(bufferSize: Int) {
 
   implicit private class PimpedFile(directory: File) {
     def newChildFile: File = {
-      val file = Stream.continually(new File(directory, Random.alphanumeric.take(8).mkString)).find(!_.exists()).get
+      val file = Iterator.continually(new File(directory, Random.alphanumeric.take(8).mkString)).find(!_.exists()).get
       file.createNewFile()
       file
     }
@@ -30,7 +31,7 @@ class ExternalMergeSort(bufferSize: Int) {
 
     //it sorts chunks and save them into the file
     //it return total number of saved chunks
-    def sortChunks(it: Traversable[T], file: File): Int = {
+    def sortChunks(it: Producer[T], file: File): Int = {
       val stream = new BufferedOutputStream(new FileOutputStream(file))
       try {
         val buffer = new mutable.PriorityQueue[T]()(n.reverse)
@@ -163,7 +164,7 @@ class ExternalMergeSort(bufferSize: Int) {
 
   }
 
-  def sort[T](it: Traversable[T], directory: File)(implicit n: Numeric[T]): File = {
+  def sort[T](it: Producer[T], directory: File)(implicit n: Numeric[T]): File = {
     val chunkInfo = {
       val numericBytes: Array[Byte] = n.zero
       val chunkSize = {

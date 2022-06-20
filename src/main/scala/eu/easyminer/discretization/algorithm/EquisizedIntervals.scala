@@ -4,19 +4,19 @@ import eu.easyminer.discretization.algorithm.CutpointsResolver._
 import eu.easyminer.discretization.algorithm.Discretization.Exceptions.IllegalTypeOfTraversable
 import eu.easyminer.discretization.algorithm.IntervalSmoothing._
 import eu.easyminer.discretization.impl._
-import eu.easyminer.discretization.impl.sorting.SortedTraversable
+import eu.easyminer.discretization.impl.sorting.SortedProducer
 
 /**
   * Created by propan on 31. 3. 2017.
   */
 class EquisizedIntervals[T] private[algorithm](minSupport: Support)(implicit val n: Numeric[T]) extends Discretization[T] {
 
-  private def countOptimalFrequency(data: Traversable[T]) = minSupport match {
+  private def countOptimalFrequency(data: Producer[T]) = minSupport match {
     case Support.Relative(minSupport) => math.ceil(data.size * minSupport).toInt
     case Support.Absolute(minSupport) => minSupport
   }
 
-  private def searchIntervals(data: Traversable[ValueFrequency[T]], optimalFrequency: Int) = {
+  private def searchIntervals(data: Producer[ValueFrequency[T]], optimalFrequency: Int) = {
     val intervals = new collection.mutable.ArrayBuffer[Interval.WithFrequency]()
     for (value <- data) {
       intervals
@@ -32,7 +32,7 @@ class EquisizedIntervals[T] private[algorithm](minSupport: Support)(implicit val
       intervals.lastOption.filter(_.frequency < optimalFrequency) foreach { lastInterval =>
         val prevLastInterval = intervals(intervals.length - 2)
         intervals.update(intervals.length - 2, Interval(prevLastInterval.minValue, lastInterval.maxValue, lastInterval.frequency + prevLastInterval.frequency))
-        intervals.reduceToSize(intervals.length - 1)
+        intervals.trimToSize()
       }
     }
     intervals
@@ -52,14 +52,14 @@ class EquisizedIntervals[T] private[algorithm](minSupport: Support)(implicit val
     decreasedIntervalFreqency >= optimalFrequency && nextDifference < currentDifference
   }
 
-  def discretize(data: Traversable[T]): IndexedSeq[Interval.WithFrequency] = data match {
-    case data: SortedTraversable[T] =>
+  def discretize(data: Producer[T]): IndexedSeq[Interval.WithFrequency] = data match {
+    case data: SortedProducer[T] =>
       val optimalFrequency = countOptimalFrequency(data)
       val intervals = searchIntervals(data, optimalFrequency)
       smoothIntervals(intervals, data, 1000000)(canItMoveLeft(optimalFrequency))(canItMoveRight(optimalFrequency))
       resolveCutpoints(intervals.asInstanceOf[collection.mutable.ArrayBuffer[Interval]])
       intervals.toIndexedSeq
-    case _ => throw new IllegalTypeOfTraversable(classOf[SortedTraversable[T]], data.getClass)
+    case _ => throw new IllegalTypeOfTraversable(classOf[SortedProducer[T]], data.getClass)
   }
 
 }

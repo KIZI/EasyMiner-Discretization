@@ -1,9 +1,8 @@
 package eu.easyminer.discretization.algorithm
 
 import java.util
-
-import eu.easyminer.discretization.impl.sorting.SortedTraversable
-import eu.easyminer.discretization.impl.{Interval, IntervalBound, ValueFrequency}
+import eu.easyminer.discretization.impl.sorting.SortedProducer
+import eu.easyminer.discretization.impl.{Interval, IntervalBound, Producer, ValueFrequency}
 import eu.easyminer.discretization.util.NumericByteArray._
 
 /**
@@ -11,13 +10,13 @@ import eu.easyminer.discretization.util.NumericByteArray._
   */
 trait IntervalSmoothing {
 
-  def smoothIntervals[T](intervals: collection.mutable.ArrayBuffer[Interval.WithFrequency], records: SortedTraversable[T], bufferSize: Int)
+  def smoothIntervals[T](intervals: collection.mutable.ArrayBuffer[Interval.WithFrequency], records: SortedProducer[T], bufferSize: Int)
                         (canItMoveLeft: (ValueFrequency[T], Interval.WithFrequency, Interval.WithFrequency) => Boolean)
                         (canItMoveRight: (ValueFrequency[T], Interval.WithFrequency, Interval.WithFrequency) => Boolean)
                         (implicit n: Numeric[T]): Unit = {
     if (bufferSize < 32) throw new IllegalArgumentException("Buffer size for smoothing must be greater than 31 bytes.")
     //input data are converted into ValueFrequency - it is aggregated distinct values with their count
-    val groupedData: Traversable[ValueFrequency[T]] = records
+    val groupedData: Producer[ValueFrequency[T]] = records
     //values buffer for faster smoothing iteration
     val buffer = new util.LinkedList[ValueFrequency[T]]()
     //miximal number of values in the buffer
